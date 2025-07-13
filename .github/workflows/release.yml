@@ -1,0 +1,60 @@
+name: PHPStan
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  phpstan:
+    name: phpstan
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          coverage: none
+
+      - name: Install composer dependencies
+        uses: ramsey/composer-install@v2
+
+      - name: Run PHPStan
+        run: ./vendor/bin/phpstan --error-format=github
+
+  phpunit:
+    name: phpunit
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          coverage: none
+
+      - name: Install composer dependencies
+        uses: ramsey/composer-install@v2
+
+      - name: Run PHPStan
+        run: ./vendor/bin/phpunit
+
+  release:
+    name: Release
+    needs: [phpstan, phpunit]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: buckhamduffy/release-drafter@v1
+        with:
+          master_branch: main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
